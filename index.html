@@ -24,7 +24,6 @@
             margin: 0;
             padding: 20px;
 
-            /* Background image with an overlay to ensure readability */
             background-image: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=1887&auto=format&fit=crop');
             background-size: cover;
             background-position: center center;
@@ -74,9 +73,6 @@
         }
 
         .card:hover {
-            transform: translateY(-5px); /* Lifts the card on hover */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15); /* Enhances the shadow */
-            /* cursor: pointer; */ /* Removing this as not all cards are clickable */
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
@@ -116,7 +112,6 @@
             font-weight: 500;
         }
 
-        /* Crop Selection */
         .crop-selector-card {
             display: flex;
             flex-wrap: wrap;
@@ -140,7 +135,6 @@
             width: 250px;
         }
 
-        /* Health Status Card */
         .health-card {
             text-align: center;
             color: white;
@@ -177,7 +171,6 @@
         .status-caution { background-color: var(--status-caution); }
         .status-urgent { background-color: var(--status-urgent); }
         .health-card.disconnected {
-            background-color: #9e9e9e; /* Neutral grey */
             background-color: #9e9e9e;
         }
 
@@ -191,14 +184,12 @@
             margin-top: 15px;
             font-weight: 500;
             transition: background-color 0.3s ease;
-            display: none; /* Hidden by default */
             display: none;
         }
         .improve-btn:hover {
             background-color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Sensor Grid */
         .sensor-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -270,14 +261,12 @@
             font-weight: 700;
         }
 
-        /* Controls & Recommendations Layout */
         .controls-recommendations-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 30px;
         }
 
-        /* System Controls */
         .control-item {
             display: flex;
             justify-content: space-between;
@@ -362,7 +351,6 @@
             transform: translateX(26px);
         }
 
-        /* AI Recommendations */
         #recommendations-list {
             list-style-type: none;
             padding: 0;
@@ -596,7 +584,6 @@
     <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LANGUAGE TRANSLATIONS ---
     const translations = {
         en: {
             dashboardTitle: "EcoCrop AI Dashboard 🌿",
@@ -841,8 +828,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- CROP PROFILES ---
-    // This structure now includes growth stages for more precise AI analysis.
     const cropProfiles = {
         dragonFruit: {
             name: "Dragon Fruit",
@@ -914,11 +899,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-    // ------------------------------------
 
     let isConnected = false;
     let updateInterval = null;
-    let sensorData = {}; // This will hold the current simulated data for the dashboard.
     let sensorData = {};
     let currentLang = 'en';
     let controlUpdateInterval = null;
@@ -930,7 +913,6 @@ document.addEventListener('DOMContentLoaded', () => {
         co2Injector: { active: false, startTime: null, totalActiveTime: 0 }
     };
 
-    // Get references to all the HTML elements we need to interact with
     const elements = {
         temp: document.getElementById('temp-value'),
         humidity: document.getElementById('humidity-value'),
@@ -995,10 +977,6 @@ document.addEventListener('DOMContentLoaded', () => {
         uiStrings: document.querySelectorAll('[data-key]'),
     };
 
-    /**
-     * Updates all UI text based on the selected language.
-     * @param {string} lang - The language code ('en' or 'hi').
-     */
     function setLanguage(lang) {
         currentLang = lang;
         const t = translations[lang];
@@ -1055,18 +1033,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Updates the Ideal Growing Conditions card based on the selected crop.
-     */
     function updateIdealConditionsUI() {
         const selectedCropKey = elements.cropSelector.value;
         const selectedStageKey = elements.growthStageSelector.value;
-        if (!selectedStageKey) return; // Don't run if no stage is selected
         if (!selectedStageKey) return;
 
         const stageProfile = cropProfiles[selectedCropKey].growthStages[selectedStageKey];
 
-        // Update Ideal Conditions display
         elements.idealTemp.textContent = `${stageProfile.temp.optimal[0]} - ${stageProfile.temp.optimal[1]} °C`;
         elements.idealHumidity.textContent = `${stageProfile.humidity.optimal[0]} - ${stageProfile.humidity.optimal[1]} %`;
         elements.idealMoisture.textContent = `${stageProfile.moisture.optimal[0]} - ${stageProfile.moisture.optimal[1]} %`;
@@ -1075,11 +1048,6 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.idealEc.textContent = `${stageProfile.ec.optimal[0]} - ${stageProfile.ec.optimal[1]} mS/cm`;
     }
 
-    /**
-     * Formats a duration from a start time into a string like "Xm Ys".
-     * @param {number|null} startTime - The timestamp when the control was activated.
-     * @returns {string}
-     */
     function formatDuration(startTime) {
         if (!startTime) return "0s";
         const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -1101,40 +1069,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /**
-     * Updates the status text for the system controls.
-     */
     function updateControlsUI() {
         const t = translations[currentLang];
 
-        // Irrigation
         let irrigationSession = controlState.irrigation.active ? (Date.now() - controlState.irrigation.startTime) : 0;
         elements.irrigationStatus.textContent = controlState.irrigation.active ? `${t.activeFor} ${formatDuration(controlState.irrigation.startTime)}` : t.inactive;
         elements.irrigationHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.irrigation.totalActiveTime + irrigationSession)}`;
         elements.irrigationResetBtn.style.display = controlState.irrigation.active ? 'none' : 'inline-block';
 
-        // Lights
         let lightsSession = controlState.lights.active ? (Date.now() - controlState.lights.startTime) : 0;
         elements.lightsStatus.textContent = controlState.lights.active ? `${t.activeFor} ${formatDuration(controlState.lights.startTime)} | ${t.intensity} ${controlState.lights.intensity}%` : t.inactive;
         elements.lightsHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.lights.totalActiveTime + lightsSession)}`;
         elements.lightsResetBtn.style.display = controlState.lights.active ? 'none' : 'inline-block';
 
-        // Fan
         let fanSession = controlState.fan.active ? (Date.now() - controlState.fan.startTime) : 0;
         elements.fanStatus.textContent = controlState.fan.active ? `${t.activeFor} ${formatDuration(controlState.fan.startTime)}` : t.inactive;
         elements.fanHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.fan.totalActiveTime + fanSession)}`;
         elements.fanResetBtn.style.display = controlState.fan.active ? 'none' : 'inline-block';
 
-        // CO2 Injector
         let co2Session = controlState.co2Injector.active ? (Date.now() - controlState.co2Injector.startTime) : 0;
         elements.co2InjectorStatus.textContent = controlState.co2Injector.active ? `${t.activeFor} ${formatDuration(controlState.co2Injector.startTime)}` : t.inactive;
         elements.co2InjectorHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.co2Injector.totalActiveTime + co2Session)}`;
         elements.co2InjectorResetBtn.style.display = controlState.co2Injector.active ? 'none' : 'inline-block';
     }
 
-    /**
-     * Fetches new data and updates the entire dashboard UI.
-     */
     function updateDashboardUI() {
         if (!isConnected) return;
 
@@ -1147,10 +1105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCropOption = elements.cropSelector.querySelector(`option[value="${selectedCropKey}"]`);
         elements.liveReadingCropName.textContent = ` - ${selectedCropOption.textContent}`;
 
-        // Simulate new data every time the dashboard updates
         simulateNewSensorData(stageProfile);
 
-        // 1. Update sensor value displays
         elements.temp.textContent = sensorData.temperature;
         elements.humidity.textContent = sensorData.humidity;
         elements.moisture.textContent = sensorData.soil_moisture;
@@ -1160,24 +1116,19 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.co2.textContent = sensorData.co2;
         elements.ec.textContent = sensorData.ec;
 
-        // 2. Analyze data and generate recommendations
         const { status, recommendations, healthDetailMessage, detailedStatus, score } = analyzeCropHealth(sensorData, stageProfile);
 
-        // 3. Update health card
         elements.healthScore.textContent = `${score}%`;
         elements.healthStatusText.textContent = translations[currentLang][status.key];
-        elements.healthCard.className = 'card health-card ' + status.class; // Reset and add new class
         elements.healthCard.className = 'card health-card ' + status.class;
         elements.healthDetails.textContent = healthDetailMessage;
 
-        // Show/hide improve score button
         if (score < 100) {
             elements.improveHealthBtn.style.display = 'inline-block';
         } else {
             elements.improveHealthBtn.style.display = 'none';
         }
 
-        // Update individual sensor statuses
         const t = translations[currentLang];
         elements.tempValueP.className = `sensor-value ${detailedStatus.temp.class}`;
         elements.tempStatus.textContent = t[detailedStatus.temp.textKey] || '';
@@ -1188,7 +1139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.co2ValueP.className = `sensor-value ${detailedStatus.co2.class}`;
         elements.co2Status.textContent = t[detailedStatus.co2.textKey] || '';
 
-        // 4. Update recommendations list
         elements.recommendationsList.innerHTML = '';
         if (recommendations.length > 0) {
             recommendations.forEach(rec => {
@@ -1199,18 +1149,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
             const li = document.createElement('li');
-            li.textContent = 'No recommendations at this time. All systems optimal.'; // This should also be translated in a real app
             li.textContent = 'No recommendations at this time. All systems optimal.';
             elements.recommendationsList.appendChild(li);
         }
     }
 
-    /**
-     * A simple AI/rule-based engine to analyze sensor data against a crop's profile.
-     * @param {object} data - The current sensor data.
-     * @param {object} profile - The ideal profile for the selected crop.
-     * @returns {object} An object containing the health status and an array of recommendations.
-     */
     function analyzeCropHealth(data, profile) {
         const recommendations = [];
         let urgentCount = 0;
@@ -1218,13 +1161,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let healthDetailMessage = '';
         const detailedStatus = {};
 
-        // Temperature Check
         let tempStatus = { class: 'optimal', textKey: 'statusOptimal' };
         if (data.temperature < profile.temp.caution[0] || data.temperature > profile.temp.caution[1]) {
             urgentCount++;
             tempStatus = { class: 'urgent', textKey: data.temperature < profile.temp.caution[0] ? 'statusLow' : 'statusHigh' };
             recommendations.push({ level: 'urgent', message: `URGENT: Temperature is ${data.temperature}°C, which is outside the critical range.` });
-            if (!healthDetailMessage) { // Only set for the first issue found
             if (!healthDetailMessage) {
                 healthDetailMessage = `Temperature is ${data.temperature}°C (Ideal: ${profile.temp.optimal[0]}-${profile.temp.optimal[1]}°C)`;
             }
@@ -1238,7 +1179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         detailedStatus.temp = tempStatus;
 
-        // Humidity Check (example)
         let humidityStatus = { class: 'optimal', textKey: 'statusOptimal' };
         if (data.humidity < profile.humidity.caution[0] || data.humidity > profile.humidity.caution[1]) {
             urgentCount++;
@@ -1249,7 +1189,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         detailedStatus.humidity = humidityStatus;
 
-        // Soil Moisture Check
         let moistureStatus = { class: 'optimal', textKey: 'statusOptimal' };
         if (data.soil_moisture < profile.moisture.caution[0] || data.soil_moisture > profile.moisture.caution[1]) {
             urgentCount++;
@@ -1268,7 +1207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         detailedStatus.moisture = moistureStatus;
 
-        // CO2 Check
         let co2Status = { class: 'optimal', textKey: 'statusOptimal' };
         if (data.co2 < profile.co2.caution[0] || data.co2 > profile.co2.caution[1]) {
             urgentCount++;
@@ -1287,11 +1225,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         detailedStatus.co2 = co2Status;
 
-        // Calculate score
         let score = 100 - (urgentCount * 25) - (cautionCount * 10);
         if (score < 0) score = 0;
 
-        // Determine overall status
         let status;
         if (urgentCount > 0) {
             status = { key: 'urgent', class: 'status-urgent' };
@@ -1300,7 +1236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             status = { key: 'optimal', class: 'status-optimal' };
             healthDetailMessage = 'All parameters are within the optimal range.';
-            score = 100; // Ensure it's exactly 100 if optimal
             score = 100;
         }
 
@@ -1308,7 +1243,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetSensorReadings() {
-        // Hide sensor values and show disconnected message in health card
         elements.healthScore.style.display = 'none';
         elements.healthStatusText.style.display = 'none';
         elements.improveHealthBtn.style.display = 'none';
@@ -1316,10 +1250,8 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.healthDetails.style.display = 'block';
         elements.healthCard.className = 'card health-card disconnected';
 
-        // Hide the main sensor grid
         elements.sensorGrid.style.display = 'none';
 
-        // Clear individual sensor text
         elements.temp.textContent = '--';
         elements.humidity.textContent = '--';
         elements.moisture.textContent = '--';
@@ -1330,19 +1262,15 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.ec.textContent = '--';
         elements.liveReadingCropName.textContent = '';
 
-        // Reset individual sensor status text
         document.querySelectorAll('.sensor-status').forEach(el => el.textContent = '');
         document.querySelectorAll('.sensor-value').forEach(el => el.className = 'sensor-value');
 
         elements.recommendationsList.innerHTML = `<li>${translations[currentLang].disconnected}.</li>`;
     }
 
-    // --- EVENT LISTENERS ---
-    // Update dashboard when a new crop is selected
     elements.cropSelector.addEventListener('change', () => {
         populateGrowthStages(elements.cropSelector.value);
         updateIdealConditionsUI();
-        // When crop changes, we should immediately update live data if connected
         if (isConnected) {
             updateDashboardUI();
         }
@@ -1350,7 +1278,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.growthStageSelector.addEventListener('change', () => {
         updateIdealConditionsUI();
-        // When stage changes, we should immediately update live data if connected
         if (isConnected) {
             updateDashboardUI();
         }
@@ -1359,10 +1286,8 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.irrigationToggle.addEventListener('change', (e) => {
         const wasActive = controlState.irrigation.active;
         controlState.irrigation.active = e.target.checked;
-        if (e.target.checked) { // just turned on
         if (e.target.checked) {
             controlState.irrigation.startTime = Date.now();
-        } else if (wasActive) { // just turned off
         } else if (wasActive) {
             controlState.irrigation.totalActiveTime += (Date.now() - controlState.irrigation.startTime);
             controlState.irrigation.startTime = null;
@@ -1403,7 +1328,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateControlsUI();
     });
 
-    // Reset Button Listeners
     const setupResetListener = (btn, control) => {
         btn.addEventListener('click', () => {
             control.totalActiveTime = 0;
@@ -1416,17 +1340,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupResetListener(elements.fanResetBtn, controlState.fan);
     setupResetListener(elements.co2InjectorResetBtn, controlState.co2Injector);
 
-    // Handle Improve Health button click
     elements.improveHealthBtn.addEventListener('click', () => {
         elements.recommendationsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    // Handle language change
     elements.langSelector.addEventListener('change', (e) => {
         setLanguage(e.target.value);
     });
 
-    // Handle connect/disconnect button
     elements.connectBtn.addEventListener('click', () => {
         isConnected = !isConnected;
         const t = translations[currentLang];
@@ -1435,13 +1356,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.connectBtn.textContent = t.disconnect;
             elements.connectionText.textContent = t.connected;
             elements.connectionText.className = 'connected';
-            // Show relevant elements
             elements.healthScore.style.display = 'block';
             elements.healthStatusText.style.display = 'block';
             elements.healthDetails.style.display = 'block';
             elements.sensorGrid.style.display = 'grid';
-            updateDashboardUI(); // Initial update
-            updateInterval = setInterval(updateDashboardUI, 5000); // Auto-update every 5 seconds
             updateDashboardUI();
             updateInterval = setInterval(updateDashboardUI, 5000);
         } else {
@@ -1453,14 +1371,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- INITIALIZATION ---
-    // Set default language and clear sensor readings on page load
     populateGrowthStages(elements.cropSelector.value);
     setLanguage(currentLang);
     updateControlsUI();
-    updateIdealConditionsUI(); // Populate ideal conditions on load
-    resetSensorReadings(); // Clear live sensor data
-    controlUpdateInterval = setInterval(updateControlsUI, 1000); // Start timer updates
     updateIdealConditionsUI();
     resetSensorReadings();
     controlUpdateInterval = setInterval(updateControlsUI, 1000);
