@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCrop Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2d6a4f;
+            --primary-dark: #1b4332;
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --status-optimal: #40916c;
+            --status-caution: #fca311;
+            --status-urgent: #d00000;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+
+            /* Background image with an overlay to ensure readability */
+            background-image: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=1887&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        #lang-selector {
+            padding: 8px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            gap: 30px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px); /* Lifts the card on hover */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15); /* Enhances the shadow */
+            /* cursor: pointer; */ /* Removing this as not all cards are clickable */
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: var(--primary-dark);
+            text-align: left;
+            margin: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        #connection-text {
+            margin-right: 15px;
+            font-weight: 500;
+        }
+        #connection-text.disconnected { color: var(--status-urgent); }
+        #connection-text.connected { color: var(--status-optimal); }
+
+        .connect-btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Crop Selection */
+        .crop-selector-card {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+        }
+        .selector-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .selector-group label {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        .selector-group select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 250px;
+        }
+
+        /* Health Status Card */
+        .health-card {
+            text-align: center;
+            color: white;
+            transition: background-color 0.5s ease;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .health-card h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        #health-score {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        #health-status-text {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        #health-details {
+            font-size: 0.9em;
+            margin-top: 5px;
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+        .status-optimal { background-color: var(--status-optimal); }
+        .status-caution { background-color: var(--status-caution); }
+        .status-urgent { background-color: var(--status-urgent); }
+        .health-card.disconnected {
+            background-color: #9e9e9e; /* Neutral grey */
+            background-color: #9e9e9e;
+        }
+
+        .improve-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            display: none; /* Hidden by default */
+            display: none;
+        }
+        .improve-btn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Sensor Grid */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .sensor-card {
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .sensor-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .sensor-card h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+        p.sensor-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 10px 0 0 0;
+            transition: color 0.5s ease;
+        }
+        .sensor-value.optimal { color: var(--status-optimal); }
+        .sensor-value.caution { color: var(--status-caution); }
+        .sensor-value.urgent { color: var(--status-urgent); }
+
+        .sensor-status {
+            font-size: 0.9em;
+            font-weight: 500;
+            margin-top: 5px;
+            min-height: 1.2em;
+            color: #555;
+        }
+        
+        #sensor-disconnected-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        #sensor-disconnected-message p {
+            margin: 0;
+        }
+        #sensor-disconnected-message p:first-child {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .condition-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            font-size: 1.1em;
+            border-bottom: 1px solid #eee;
+        }
+        .condition-item:last-child {
+            border-bottom: none;
+        }
+        .condition-item strong {
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* Controls & Recommendations Layout */
+        .controls-recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        /* System Controls */
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .control-item:last-child {
+            border-bottom: none;
+        }
+    .control-details {
+        display: flex;
+        flex-direction: column;
+    }
+    .control-name {
+            font-size: 1.1em;
+        }
+    .control-status-text {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 4px;
+        min-height: 1em;
+    }
+    .control-history-text {
+        font-size: 0.8em;
+        color: #888;
+        margin-top: 4px;
+        min-height: 1em;
+    }
+    .control-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .reset-btn {
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 0.8em;
+        cursor: pointer;
+        color: #555;
+    }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* AI Recommendations */
+        #recommendations-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #recommendations-list li {
+            background-color: #e9f5f0;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        #recommendations-list li.urgent {
+            border-left-color: var(--status-urgent);
+            background-color: #fff0f0;
+        }
+        #recommendations-list li.caution {
+            border-left-color: var(--status-caution);
+            background-color: #fff8e1;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div>
+                <h1 data-key="dashboardTitle">EcoCrop Dashboard 🌿</h1>
+                <p data-key="dashboardSubtitle">Your smart assistant for precision farming</p>
+            </div>
+            <div class="language-selector">
+                <select id="lang-selector">
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी</option>
+                    <option value="ta">தமிழ்</option>
+                    <option value="bn">বাংলা</option>
+                    <option value="mr">मराठी</option>
+                    <option value="gu">ગુજરાતી</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="card crop-selector-card">
+            <div class="selector-group">
+                <label for="crop-selector" data-key="currentlyGrowing">🌱 Crop:</label>
+                <select id="crop-selector">
+                    <option value="dragonFruit" data-key="dragonFruit">Dragon Fruit</option>
+                    <option value="strawberry" data-key="strawberry">Strawberry</option>
+                    <option value="lettuce" data-key="lettuce">Lettuce</option>
+                </select>
+            </div>
+            <div class="selector-group">
+                <label for="growth-stage-selector" data-key="growthStage">Stage:</label>
+                <select id="growth-stage-selector">
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title" data-key="idealConditionsTitle">Ideal Growing Conditions</h2>
+            <div id="ideal-conditions-list">
+                <div class="condition-item">
+                    <span>🌡️ Temperature:</span>
+                    <strong id="ideal-temp-value">--</strong>
+                </div>
+                <div class="condition-item">
+                    <span>💧 Humidity:</span>
+                    <strong id="ideal-humidity-value">--</strong>
+                </div>
+                <div class="condition-item">
+                    <span>🌱 Soil Moisture:</span>
+                    <strong id="ideal-moisture-value">--</strong>
+                </div>
+                <div class="condition-item">
+                    <span>🧪 Soil pH:</span>
+                    <strong id="ideal-ph-value">--</strong>
+                </div>
+                <div class="condition-item">
+                    <span>💨 CO₂ Level:</span>
+                    <strong id="ideal-co2-value">--</strong>
+                </div>
+                <div class="condition-item">
+                    <span>⚡ EC Level:</span>
+                    <strong id="ideal-ec-value">--</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span data-key="liveReadingsTitle">Live Sensor Readings</span>
+                    <span id="live-reading-crop-name" style="color: var(--primary-color); font-weight: 500;"></span>
+                </h2>
+                <div class="connection-status">
+                    <span id="connection-text" class="disconnected" data-key="disconnected">Disconnected</span>
+                    <button id="connect-btn" class="connect-btn" data-key="connect">Connect</button>
+                </div>
+            </div>
+
+            <div id="health-status-card" class="health-card">
+                <h2 data-key="overallHealthTitle">Overall Crop Health</h2>
+                <p id="health-score">--%</p>
+                <p id="health-status-text"></p>
+                <p id="health-details"></p>
+                <button id="improve-health-btn" class="improve-btn" data-key="improveHealth">Improve
+                    Health</button>
+            </div>
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <h3>🌡️ Temperature</h3>
+                    <p class="sensor-value" id="temp-value-p"><span id="temp-value">--</span> °C</p>
+                    <p class="sensor-status" id="temp-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>💧 Humidity</h3>
+                    <p class="sensor-value" id="humidity-value-p"><span id="humidity-value">--</span> %</p>
+                    <p class="sensor-status" id="humidity-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>🌱 Soil Moisture</h3>
+                    <p class="sensor-value" id="moisture-value-p"><span id="moisture-value">--</span> %</p>
+                    <p class="sensor-status" id="moisture-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>🧪 Soil pH</h3>
+                    <p class="sensor-value" id="ph-value-p"><span id="ph-value">--</span></p>
+                    <p class="sensor-status" id="ph-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>☀️ Light Intensity</h3>
+                    <p class="sensor-value" id="light-value-p"><span id="light-value">--</span> lux</p>
+                    <p class="sensor-status" id="light-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>🔬 N-P-K</h3>
+                    <p class="sensor-value" id="npk-value-p"><span id="npk-value">--</span></p>
+                    <p class="sensor-status" id="npk-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>💨 CO₂ Level</h3>
+                    <p class="sensor-value" id="co2-value-p"><span id="co2-value">--</span> ppm</p>
+                    <p class="sensor-status" id="co2-status"></p>
+                </div>
+                <div class="sensor-card">
+                    <h3>⚡ EC Level</h3>
+                    <p class="sensor-value" id="ec-value-p"><span id="ec-value">--</span> mS/cm</p>
+                    <p class="sensor-status" id="ec-status"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-recommendations-grid">
+            <div class="card" id="recommendations-card">
+                <h2 class="section-title" data-key="recommendationsTitle">AI Recommendations & Alerts</h2>
+                <ul id="recommendations-list">
+                    <li>No recommendations at this time. All systems optimal.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title" data-key="systemControlsTitle">System Controls</h2>
+                <div class="control-item">
+                    <div class="control-details">
+                        <span class="control-name" data-key="irrigationPump">💧 Irrigation Pump</span>
+                        <span class="control-status-text" id="irrigation-status-text"></span>
+                        <span class="control-history-text" id="irrigation-history-text"></span>
+                    </div>
+                    <div class="control-actions">
+                        <button class="reset-btn" id="irrigation-reset-btn" data-key="reset">Reset</button>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="irrigation-control" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-item">
+                    <div class="control-details">
+                        <span class="control-name" data-key="growLights">💡 Grow Lights</span>
+                        <span class="control-status-text" id="lights-status-text"></span>
+                        <span class="control-history-text" id="lights-history-text"></span>
+                    </div>
+                    <div class="control-actions">
+                        <button class="reset-btn" id="lights-reset-btn" data-key="reset">Reset</button>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="lights-control" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-item">
+                    <div class="control-details">
+                        <span class="control-name" data-key="ventilationFan">💨 Ventilation Fan</span>
+                        <span class="control-status-text" id="fan-status-text"></span>
+                        <span class="control-history-text" id="fan-history-text"></span>
+                    </div>
+                    <div class="control-actions">
+                        <button class="reset-btn" id="fan-reset-btn" data-key="reset">Reset</button>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="fan-control">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-item">
+                    <div class="control-details">
+                        <span class="control-name" data-key="co2Injector">💨 CO₂ Injector</span>
+                        <span class="control-status-text" id="co2-injector-status-text"></span>
+                        <span class="control-history-text" id="co2-injector-history-text"></span>
+                    </div>
+                    <div class="control-actions">
+                        <button class="reset-btn" id="co2-injector-reset-btn" data-key="reset">Reset</button>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="co2-injector-control">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- LANGUAGE TRANSLATIONS ---
+    const translations = {
+        en: {
+            dashboardTitle: "EcoCrop AI Dashboard 🌿",
+            dashboardSubtitle: "Your smart assistant for precision farming",
+            currentlyGrowing: "🌱 Currently Growing:",
+            dragonFruit: "Dragon Fruit",
+            strawberry: "Strawberry",
+            lettuce: "Lettuce",
+            idealConditionsTitle: "Ideal Growing Conditions",
+            liveReadingsTitle: "Live Sensor Readings",
+            overallHealthTitle: "Overall Crop Health",
+            systemControlsTitle: "System Controls",
+            irrigationPump: "💧 Irrigation Pump",
+            growLights: "💡 Grow Lights",
+            ventilationFan: "💨 Ventilation Fan",
+            recommendationsTitle: "AI Recommendations & Alerts",
+            connect: "Connect",
+            disconnect: "Disconnect",
+            connected: "Connected",
+            disconnected: "Disconnected",
+            optimal: "Optimal",
+            caution: "Caution",
+            urgent: "Urgent",
+            activeFor: "Active for:",
+            intensity: "Intensity:",
+            inactive: "Inactive",
+            growthStage: "Stage:",
+            seedling: "Seedling",
+            vegetative: "Vegetative",
+            flowering: "Flowering",
+            fruiting: "Fruiting",
+            co2Injector: "💨 CO₂ Injector",
+            statusOptimal: "Optimal",
+            statusHigh: "High",
+            statusLow: "Low",
+            improveHealth: "Improve Health",
+            totalActive: "Total Active:",
+            reset: "Reset",
+            deviceNotConnected: "Device is not connected.",
+            connectToSeeLive: "Please connect to see live readings.",
+        },
+        hi: {
+            dashboardTitle: "इकोक्रॉप एआई डैशबोर्ड 🌿",
+            dashboardSubtitle: "सटीक खेती के लिए आपका स्मार्ट सहायक",
+            currentlyGrowing: "🌱 वर्तमान में उगाया जा रहा है:",
+            dragonFruit: "ड्रैगन फ्रूट",
+            strawberry: "स्ट्रॉबेरी",
+            lettuce: "सलाद पत्ता",
+            idealConditionsTitle: "आदर्श बढ़ती स्थितियाँ",
+            liveReadingsTitle: "लाइव सेंसर रीडिंग",
+            overallHealthTitle: "समग्र फसल स्वास्थ्य",
+            systemControlsTitle: "सिस्टम नियंत्रण",
+            irrigationPump: "💧 सिंचाई पंप",
+            growLights: "💡 ग्रो लाइट्स",
+            ventilationFan: "💨 वेंटिलेशन पंखा",
+            recommendationsTitle: "एआई सिफारिशें और अलर्ट",
+            connect: "कनेक्ट करें",
+            disconnect: "डिस्कनेक्ट करें",
+            connected: "कनेक्टेड",
+            disconnected: "डिस्कनेक्टेड",
+            optimal: "इष्टतम",
+            caution: "सावधानी",
+            urgent: "अत्यावश्यक",
+            activeFor: "सक्रिय:",
+            intensity: "तीव्रता:",
+            inactive: "निष्क्रिय",
+            growthStage: "चरण:",
+            seedling: "अंकुर",
+            vegetative: "वानस्पतिक",
+            flowering: "फूल",
+            fruiting: "फलन",
+            co2Injector: "💨 CO₂ इंजेक्टर",
+            statusOptimal: "इष्टतम",
+            statusHigh: "उच्च",
+            statusLow: "कम",
+            improveHealth: "स्वास्थ्य सुधारें",
+            totalActive: "कुल सक्रिय:",
+            reset: "रीसेट",
+            deviceNotConnected: "डिवाइस कनेक्ट नहीं है।",
+            connectToSeeLive: "लाइव रीडिंग देखने के लिए कृपया कनेक्ट करें।",
+        }
+        ,
+        ta: {
+            dashboardTitle: "ஈகோகிராப் AI டாஷ்போர்டு 🌿",
+            dashboardSubtitle: "துல்லியமான விவசாயத்திற்கான உங்கள் ஸ்மார்ட் உதவியாளர்",
+            currentlyGrowing: "🌱 தற்போது வளர்ந்து வருகிறது:",
+            dragonFruit: "டிராகன் பழம்",
+            strawberry: "ஸ்ட்ராபெரி",
+            lettuce: "கீரை",
+            idealConditionsTitle: "சிறந்த வளரும் நிலைமைகள்",
+            liveReadingsTitle: "நேரடி சென்சார் அளவீடுகள்",
+            overallHealthTitle: "ஒட்டுமொத்த பயிர் ஆரோக்கியம்",
+            systemControlsTitle: "கணினி கட்டுப்பாடுகள்",
+            irrigationPump: "💧 நீர்ப்பாசன பம்ப்",
+            growLights: "💡 வளர்ச்சி விளக்குகள்",
+            ventilationFan: "💨 காற்றோட்டம் விசிறி",
+            recommendationsTitle: "AI பரிந்துரைகள் & எச்சரிக்கைகள்",
+            connect: "இணைக்கவும்",
+            disconnect: "துண்டிக்கவும்",
+            connected: "இணைக்கப்பட்டது",
+            disconnected: "துண்டிக்கப்பட்டது",
+            optimal: "உகந்தது",
+            caution: "எச்சரிக்கை",
+            urgent: "அவசரம்",
+            activeFor: "செயலில்:",
+            intensity: "தீவிரம்:",
+            inactive: "செயலற்றது",
+            growthStage: "நிலை:",
+            seedling: "நாற்று",
+            vegetative: "தாவர வளர்ச்சி",
+            flowering: "பூக்கும்",
+            fruiting: "பழம்தரும்",
+            co2Injector: "💨 CO₂ இன்ஜெக்டர்",
+            statusOptimal: "உகந்தது",
+            statusHigh: "அதிகம்",
+            statusLow: "குறைவு",
+            improveHealth: "ஆரோக்கியத்தை மேம்படுத்து",
+            totalActive: "மொத்த செயலில்:",
+            reset: "மீட்டமை",
+            deviceNotConnected: "சாதனம் இணைக்கப்படவில்லை.",
+            connectToSeeLive: "நேரடி அளவீடுகளைக் காண, ദയവായി இணைக்கவும்.",
+        },
+        bn: {
+            dashboardTitle: "ইকোক্রপ এআই ড্যাশবোর্ড 🌿",
+            dashboardSubtitle: "নির্ভুল চাষের জন্য আপনার স্মার্ট সহকারী",
+            currentlyGrowing: "🌱 বর্তমানে চাষ হচ্ছে:",
+            dragonFruit: "ড্রাগন ফল",
+            strawberry: "স্ট্রবেরি",
+            lettuce: "লেটুস",
+            idealConditionsTitle: "আদর্শ ক্রমবর্ধমান অবস্থা",
+            liveReadingsTitle: "লাইভ সেন্সর রিডিং",
+            overallHealthTitle: "সামগ্রিক ফসলের স্বাস্থ্য",
+            systemControlsTitle: "সিস্টেম নিয়ন্ত্রণ",
+            irrigationPump: "💧 সেচ পাম্প",
+            growLights: "💡 গ্রো লাইট",
+            ventilationFan: "💨 বায়ুচলাচল ফ্যান",
+            recommendationsTitle: "এআই সুপারিশ এবং সতর্কতা",
+            connect: "সংযোগ করুন",
+            disconnect: "সংযোগ বিচ্ছিন্ন করুন",
+            connected: "সংযুক্ত",
+            disconnected: "সংযোগ বিচ্ছিন্ন",
+            optimal: "অনুকূল",
+            caution: "সতর্কতা",
+            urgent: "জরুরী",
+            activeFor: "সক্রিয়:",
+            intensity: "তীব্রতা:",
+            inactive: "নিষ্ক্রিয়",
+            growthStage: "পর্যায়:",
+            seedling: "চারা",
+            vegetative: "অঙ্গজ",
+            flowering: "ফুল ফোটা",
+            fruiting: "ফল ধরা",
+            co2Injector: "💨 CO₂ ইনজেক্টর",
+            statusOptimal: "অনুকূল",
+            statusHigh: "উচ্চ",
+            statusLow: "নিম্ন",
+            improveHealth: "স্বাস্থ্য উন্নত করুন",
+            totalActive: "মোট সক্রিয়:",
+            reset: "রিসেট",
+            deviceNotConnected: "ডিভাইস সংযুক্ত নেই।",
+            connectToSeeLive: "লাইভ রিডিং দেখতে অনুগ্রহ করে সংযোগ করুন।",
+        },
+        mr: {
+            dashboardTitle: "इकोक्रॉप एआय डॅशबोर्ड 🌿",
+            dashboardSubtitle: "अचूक शेतीसाठी तुमचा स्मार्ट सहाय्यक",
+            currentlyGrowing: "🌱 सध्या वाढत आहे:",
+            dragonFruit: "ड्रॅगन फ्रूट",
+            strawberry: "स्ट्रॉबेरी",
+            lettuce: "लेट्यूस",
+            idealConditionsTitle: "आदर्श वाढीची परिस्थिती",
+            liveReadingsTitle: "लाइव्ह सेन्सर रीडिंग",
+            overallHealthTitle: "एकूण पीक आरोग्य",
+            systemControlsTitle: "सिस्टम नियंत्रणे",
+            irrigationPump: "💧 सिंचन पंप",
+            growLights: "💡 ग्रो लाइट्स",
+            ventilationFan: "💨 व्हेंटिलेशन फॅन",
+            recommendationsTitle: "एआय शिफारसी आणि सूचना",
+            connect: "कनेक्ट करा",
+            disconnect: "डिस्कनेक्ट करा",
+            connected: "कनेक्ट केले",
+            disconnected: "डिस्कनेक्ट केले",
+            optimal: "इष्टतम",
+            caution: "सावधान",
+            urgent: "तातडीचे",
+            activeFor: "सक्रिय:",
+            intensity: "तीव्रता:",
+            inactive: "निष्क्रिय",
+            growthStage: "टप्पा:",
+            seedling: "रोप",
+            vegetative: "वाढीचा",
+            flowering: "फुलोरा",
+            fruiting: "फळधारणा",
+            co2Injector: "💨 CO₂ इंजेक्टर",
+            statusOptimal: "इष्टतम",
+            statusHigh: "उच्च",
+            statusLow: "कमी",
+            improveHealth: "आरोग्य सुधारा",
+            totalActive: "एकूण सक्रिय:",
+            reset: "रीसेट करा",
+            deviceNotConnected: "डिव्हाइस कनेक्ट केलेले नाही.",
+            connectToSeeLive: "लाइव्ह रीडिंग पाहण्यासाठी कृपया कनेक्ट करा.",
+        },
+        gu: {
+            dashboardTitle: "ઇકોક્રોપ એઆઇ ડેશબોર્ડ 🌿",
+            dashboardSubtitle: "ચોક્કસ ખેતી માટે તમારા સ્માર્ટ સહાયક",
+            currentlyGrowing: "🌱 હાલમાં ઉગાડવામાં આવે છે:",
+            dragonFruit: "ડ્રેગન ફ્રૂટ",
+            strawberry: "સ્ટ્રોબેરી",
+            lettuce: "લેટસ",
+            idealConditionsTitle: "આદર્શ વૃદ્ધિની પરિસ્થિતિઓ",
+            liveReadingsTitle: "લાઇવ સેન્સર રીડિંગ્સ",
+            overallHealthTitle: "એકંદર પાકનું સ્વાસ્થ્ય",
+            systemControlsTitle: "સિસ્ટમ નિયંત્રણો",
+            irrigationPump: "💧 સિંચાઈ પંપ",
+            growLights: "💡 ગ્રો લાઇટ્સ",
+            ventilationFan: "💨 વેન્ટિલેશન ફેન",
+            recommendationsTitle: "એઆઇ ભલામણો અને ચેતવણીઓ",
+            connect: "કનેક્ટ કરો",
+            disconnect: "ડિસ્કનેક્ટ કરો",
+            connected: "કનેક્ટેડ",
+            disconnected: "ડિસ્કનેક્ટેડ",
+            optimal: "શ્રેષ્ઠ",
+            caution: "સાવધાની",
+            urgent: "તાત્કાલિક",
+            activeFor: "સક્રિય:",
+            intensity: "તીવ્રતા:",
+            inactive: "નિષ્ક્રિય",
+            growthStage: "તબક્કો:",
+            seedling: "રોપ",
+            vegetative: "વાન્સ્પતિક",
+            flowering: "ફૂલ",
+            fruiting: "ફળ",
+            co2Injector: "💨 CO₂ ઇન્જેક્ટર",
+            statusOptimal: "શ્રેષ્ઠ",
+            statusHigh: "ઉચ્ચ",
+            statusLow: "નીચું",
+            improveHealth: "આરોગ્ય સુધારો",
+            totalActive: "કુલ સક્રિય:",
+            reset: "રીસેટ કરો",
+            deviceNotConnected: "ઉપકરણ જોડાયેલ નથી.",
+            connectToSeeLive: "લાઇવ રીડિંગ્સ જોવા માટે કૃપા કરીને કનેક્ટ કરો.",
+        }
+    };
+
+    // --- CROP PROFILES ---
+    // This structure now includes growth stages for more precise AI analysis.
+    const cropProfiles = {
+        dragonFruit: {
+            name: "Dragon Fruit",
+            growthStages: {
+                vegetative: {
+                    nameKey: "vegetative",
+                    temp: { optimal: [25, 35], caution: [20, 40] },
+                    humidity: { optimal: [70, 80], caution: [60, 90] },
+                    moisture: { optimal: [60, 75], caution: [50, 85] },
+                    ph: { optimal: [6.0, 7.0], caution: [5.5, 7.5] },
+                    co2: { optimal: [600, 800], caution: [400, 1000] },
+                    ec: { optimal: [1.5, 2.0], caution: [1.2, 2.5] },
+                },
+                flowering: {
+                    nameKey: "flowering",
+                    temp: { optimal: [22, 30], caution: [18, 35] },
+                    humidity: { optimal: [60, 70], caution: [50, 80] },
+                    moisture: { optimal: [65, 80], caution: [55, 85] },
+                    ph: { optimal: [6.0, 7.0], caution: [5.5, 7.5] },
+                    co2: { optimal: [800, 1200], caution: [600, 1500] },
+                    ec: { optimal: [1.8, 2.5], caution: [1.5, 3.0] },
+                }
+            }
+        },
+        strawberry: {
+            name: "Strawberry",
+            growthStages: {
+                vegetative: {
+                    nameKey: "vegetative",
+                    temp: { optimal: [18, 24], caution: [15, 28] },
+                    humidity: { optimal: [60, 75], caution: [50, 85] },
+                    moisture: { optimal: [70, 85], caution: [60, 90] },
+                    ph: { optimal: [5.5, 6.5], caution: [5.0, 7.0] },
+                    co2: { optimal: [500, 700], caution: [400, 900] },
+                    ec: { optimal: [1.4, 1.8], caution: [1.0, 2.2] },
+                },
+                flowering: {
+                    nameKey: "flowering",
+                    temp: { optimal: [15, 22], caution: [12, 26] },
+                    humidity: { optimal: [50, 65], caution: [40, 75] },
+                    moisture: { optimal: [65, 80], caution: [55, 85] },
+                    ph: { optimal: [5.5, 6.5], caution: [5.0, 7.0] },
+                    co2: { optimal: [700, 1000], caution: [500, 1200] },
+                    ec: { optimal: [1.8, 2.2], caution: [1.5, 2.5] },
+                }
+            }
+        },
+        lettuce: {
+            name: "Lettuce",
+            growthStages: {
+                seedling: {
+                    nameKey: "seedling",
+                    temp: { optimal: [18, 22], caution: [15, 25] },
+                    humidity: { optimal: [60, 70], caution: [50, 80] },
+                    moisture: { optimal: [80, 90], caution: [70, 95] },
+                    ph: { optimal: [6.0, 6.5], caution: [5.5, 7.0] },
+                    co2: { optimal: [400, 600], caution: [350, 800] },
+                    ec: { optimal: [0.8, 1.2], caution: [0.5, 1.5] },
+                },
+                vegetative: {
+                    nameKey: "vegetative",
+                    temp: { optimal: [15, 20], caution: [10, 24] },
+                    humidity: { optimal: [50, 65], caution: [40, 75] },
+                    moisture: { optimal: [75, 85], caution: [65, 90] },
+                    ph: { optimal: [6.0, 7.0], caution: [5.5, 7.5] },
+                    co2: { optimal: [700, 1000], caution: [500, 1200] },
+                    ec: { optimal: [1.2, 2.0], caution: [1.0, 2.5] },
+                }
+            }
+        }
+    };
+    // ------------------------------------
+
+    let isConnected = false;
+    let updateInterval = null;
+    let sensorData = {}; // This will hold the current simulated data for the dashboard.
+    let sensorData = {};
+    let currentLang = 'en';
+    let controlUpdateInterval = null;
+
+    let controlState = {
+        irrigation: { active: true, startTime: Date.now(), totalActiveTime: 0 },
+        lights: { active: true, startTime: Date.now(), intensity: 85, totalActiveTime: 0 },
+        fan: { active: false, startTime: null, totalActiveTime: 0 },
+        co2Injector: { active: false, startTime: null, totalActiveTime: 0 }
+    };
+
+    // Get references to all the HTML elements we need to interact with
+    const elements = {
+        temp: document.getElementById('temp-value'),
+        humidity: document.getElementById('humidity-value'),
+        moisture: document.getElementById('moisture-value'),
+        ph: document.getElementById('ph-value'),
+        light: document.getElementById('light-value'),
+        npk: document.getElementById('npk-value'),
+        co2: document.getElementById('co2-value'),
+        ec: document.getElementById('ec-value'),
+        tempValueP: document.getElementById('temp-value-p'),
+        humidityValueP: document.getElementById('humidity-value-p'),
+        moistureValueP: document.getElementById('moisture-value-p'),
+        phValueP: document.getElementById('ph-value-p'),
+        lightValueP: document.getElementById('light-value-p'),
+        npkValueP: document.getElementById('npk-value-p'),
+        co2ValueP: document.getElementById('co2-value-p'),
+        ecValueP: document.getElementById('ec-value-p'),
+        healthCard: document.getElementById('health-status-card'),
+        healthScore: document.getElementById('health-score'),
+        healthStatusText: document.getElementById('health-status-text'),
+        healthDetails: document.getElementById('health-details'),
+        cropSelector: document.getElementById('crop-selector'),
+        sensorGrid: document.querySelector('.sensor-grid'),
+        growthStageSelector: document.getElementById('growth-stage-selector'),
+        langSelector: document.getElementById('lang-selector'),
+        recommendationsList: document.getElementById('recommendations-list'),
+        connectBtn: document.getElementById('connect-btn'),
+        connectionText: document.getElementById('connection-text'),
+        improveHealthBtn: document.getElementById('improve-health-btn'),
+        liveReadingCropName: document.getElementById('live-reading-crop-name'),
+        tempStatus: document.getElementById('temp-status'),
+        humidityStatus: document.getElementById('humidity-status'),
+        moistureStatus: document.getElementById('moisture-status'),
+        phStatus: document.getElementById('ph-status'),
+        lightStatus: document.getElementById('light-status'),
+        npkStatus: document.getElementById('npk-status'),
+        co2Status: document.getElementById('co2-status'),
+        ecStatus: document.getElementById('ec-status'),
+        idealTemp: document.getElementById('ideal-temp-value'),
+        idealHumidity: document.getElementById('ideal-humidity-value'),
+        idealMoisture: document.getElementById('ideal-moisture-value'),
+        idealPh: document.getElementById('ideal-ph-value'),
+        recommendationsCard: document.getElementById('recommendations-card'),
+        idealCo2: document.getElementById('ideal-co2-value'),
+        idealEc: document.getElementById('ideal-ec-value'),
+        irrigationStatus: document.getElementById('irrigation-status-text'),
+        lightsStatus: document.getElementById('lights-status-text'),
+        fanStatus: document.getElementById('fan-status-text'),
+        co2InjectorStatus: document.getElementById('co2-injector-status-text'),
+        irrigationHistory: document.getElementById('irrigation-history-text'),
+        lightsHistory: document.getElementById('lights-history-text'),
+        fanHistory: document.getElementById('fan-history-text'),
+        co2InjectorHistory: document.getElementById('co2-injector-history-text'),
+        irrigationToggle: document.getElementById('irrigation-control'),
+        lightsToggle: document.getElementById('lights-control'),
+        fanToggle: document.getElementById('fan-control'),
+        co2InjectorToggle: document.getElementById('co2-injector-control'),
+        irrigationResetBtn: document.getElementById('irrigation-reset-btn'),
+        lightsResetBtn: document.getElementById('lights-reset-btn'),
+        fanResetBtn: document.getElementById('fan-reset-btn'),
+        co2InjectorResetBtn: document.getElementById('co2-injector-reset-btn'),
+        uiStrings: document.querySelectorAll('[data-key]'),
+    };
+
+    /**
+     * Updates all UI text based on the selected language.
+     * @param {string} lang - The language code ('en' or 'hi').
+     */
+    function setLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        elements.uiStrings.forEach(el => {
+            const key = el.getAttribute('data-key');
+            if (t[key]) {
+                el.textContent = t[key];
+            }
+        });
+        // Special handling for button text which changes state
+        elements.connectBtn.textContent = isConnected ? t.disconnect : t.connect;
+        elements.connectionText.textContent = isConnected ? t.connected : t.disconnected;
+
+        // Re-run dashboard update to translate health status
+        if (isConnected) {
+            updateDashboardUI();
+        }
+
+        // Re-run controls update to translate status
+        updateControlsUI();
+    };
+
+    /**
+     * Simulates new sensor readings based on the selected crop's profile.
+     * In a real application, this function would be replaced by a call to your hardware API.
+     * @param {object} profile - The ideal profile for the selected crop.
+     */
+    function simulateNewSensorData(profile) {
+        const randomInRange = (min, max) => (Math.random() * (max - min) + min);
+
+        // Generate data that hovers around the crop's ideal values, with some variance
+        // to trigger cautions and alerts dynamically.
+        sensorData = {
+            temperature: randomInRange(profile.temp.caution[0] - 2, profile.temp.caution[1] + 2).toFixed(1),
+            humidity: randomInRange(profile.humidity.caution[0] - 5, profile.humidity.caution[1] + 5).toFixed(1),
+            soil_moisture: randomInRange(profile.moisture.caution[0] - 10, profile.moisture.caution[1] + 10).toFixed(1),
+            ph: randomInRange(profile.ph.caution[0] - 0.3, profile.ph.caution[1] + 0.3).toFixed(1),
+            co2: randomInRange(profile.co2.caution[0] - 50, profile.co2.caution[1] + 100).toFixed(0),
+            ec: randomInRange(profile.ec.caution[0] - 0.2, profile.ec.caution[1] + 0.2).toFixed(2),
+            light_intensity: Math.floor(randomInRange(35000, 55000)),
+            npk: "15-10-20" // NPK is harder to simulate, keeping it static for now
+        };
+    }
+
+    function populateGrowthStages(cropKey) {
+        const stages = cropProfiles[cropKey].growthStages;
+        elements.growthStageSelector.innerHTML = ''; // Clear existing options
+        for (const stageKey in stages) {
+            const option = document.createElement('option');
+            option.value = stageKey;
+            option.textContent = translations[currentLang][stages[stageKey].nameKey] || stages[stageKey].nameKey;
+            option.setAttribute('data-key', stages[stageKey].nameKey);
+            elements.growthStageSelector.appendChild(option);
+        }
+    }
+
+    /**
+     * Updates the Ideal Growing Conditions card based on the selected crop.
+     */
+    function updateIdealConditionsUI() {
+        const selectedCropKey = elements.cropSelector.value;
+        const selectedStageKey = elements.growthStageSelector.value;
+        if (!selectedStageKey) return; // Don't run if no stage is selected
+        if (!selectedStageKey) return;
+
+        const stageProfile = cropProfiles[selectedCropKey].growthStages[selectedStageKey];
+
+        // Update Ideal Conditions display
+        elements.idealTemp.textContent = `${stageProfile.temp.optimal[0]} - ${stageProfile.temp.optimal[1]} °C`;
+        elements.idealHumidity.textContent = `${stageProfile.humidity.optimal[0]} - ${stageProfile.humidity.optimal[1]} %`;
+        elements.idealMoisture.textContent = `${stageProfile.moisture.optimal[0]} - ${stageProfile.moisture.optimal[1]} %`;
+        elements.idealPh.textContent = `${stageProfile.ph.optimal[0]} - ${stageProfile.ph.optimal[1]}`;
+        elements.idealCo2.textContent = `${stageProfile.co2.optimal[0]} - ${stageProfile.co2.optimal[1]} ppm`;
+        elements.idealEc.textContent = `${stageProfile.ec.optimal[0]} - ${stageProfile.ec.optimal[1]} mS/cm`;
+    }
+
+    /**
+     * Formats a duration from a start time into a string like "Xm Ys".
+     * @param {number|null} startTime - The timestamp when the control was activated.
+     * @returns {string}
+     */
+    function formatDuration(startTime) {
+        if (!startTime) return "0s";
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = elapsedSeconds % 60;
+        return `${minutes}m ${seconds}s`;
+    }
+
+    function formatTotalDuration(ms) {
+        if (!ms || ms < 0) ms = 0;
+        const totalSeconds = Math.floor(ms / 1000);
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+
+        if (h > 0) return `${h}h ${m}m ${s}s`;
+        if (m > 0) return `${m}m ${s}s`;
+        return `${s}s`;
+    }
+
+
+    /**
+     * Updates the status text for the system controls.
+     */
+    function updateControlsUI() {
+        const t = translations[currentLang];
+
+        // Irrigation
+        let irrigationSession = controlState.irrigation.active ? (Date.now() - controlState.irrigation.startTime) : 0;
+        elements.irrigationStatus.textContent = controlState.irrigation.active ? `${t.activeFor} ${formatDuration(controlState.irrigation.startTime)}` : t.inactive;
+        elements.irrigationHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.irrigation.totalActiveTime + irrigationSession)}`;
+        elements.irrigationResetBtn.style.display = controlState.irrigation.active ? 'none' : 'inline-block';
+
+        // Lights
+        let lightsSession = controlState.lights.active ? (Date.now() - controlState.lights.startTime) : 0;
+        elements.lightsStatus.textContent = controlState.lights.active ? `${t.activeFor} ${formatDuration(controlState.lights.startTime)} | ${t.intensity} ${controlState.lights.intensity}%` : t.inactive;
+        elements.lightsHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.lights.totalActiveTime + lightsSession)}`;
+        elements.lightsResetBtn.style.display = controlState.lights.active ? 'none' : 'inline-block';
+
+        // Fan
+        let fanSession = controlState.fan.active ? (Date.now() - controlState.fan.startTime) : 0;
+        elements.fanStatus.textContent = controlState.fan.active ? `${t.activeFor} ${formatDuration(controlState.fan.startTime)}` : t.inactive;
+        elements.fanHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.fan.totalActiveTime + fanSession)}`;
+        elements.fanResetBtn.style.display = controlState.fan.active ? 'none' : 'inline-block';
+
+        // CO2 Injector
+        let co2Session = controlState.co2Injector.active ? (Date.now() - controlState.co2Injector.startTime) : 0;
+        elements.co2InjectorStatus.textContent = controlState.co2Injector.active ? `${t.activeFor} ${formatDuration(controlState.co2Injector.startTime)}` : t.inactive;
+        elements.co2InjectorHistory.textContent = `${t.totalActive} ${formatTotalDuration(controlState.co2Injector.totalActiveTime + co2Session)}`;
+        elements.co2InjectorResetBtn.style.display = controlState.co2Injector.active ? 'none' : 'inline-block';
+    }
+
+    /**
+     * Fetches new data and updates the entire dashboard UI.
+     */
+    function updateDashboardUI() {
+        if (!isConnected) return;
+
+        const selectedCropKey = elements.cropSelector.value;
+        const selectedStageKey = elements.growthStageSelector.value;
+        if (!selectedStageKey) return;
+
+        const stageProfile = cropProfiles[selectedCropKey].growthStages[selectedStageKey];
+        
+        const selectedCropOption = elements.cropSelector.querySelector(`option[value="${selectedCropKey}"]`);
+        elements.liveReadingCropName.textContent = ` - ${selectedCropOption.textContent}`;
+
+        // Simulate new data every time the dashboard updates
+        simulateNewSensorData(stageProfile);
+
+        // 1. Update sensor value displays
+        elements.temp.textContent = sensorData.temperature;
+        elements.humidity.textContent = sensorData.humidity;
+        elements.moisture.textContent = sensorData.soil_moisture;
+        elements.ph.textContent = sensorData.ph;
+        elements.light.textContent = sensorData.light_intensity;
+        elements.npk.textContent = sensorData.npk;
+        elements.co2.textContent = sensorData.co2;
+        elements.ec.textContent = sensorData.ec;
+
+        // 2. Analyze data and generate recommendations
+        const { status, recommendations, healthDetailMessage, detailedStatus, score } = analyzeCropHealth(sensorData, stageProfile);
+
+        // 3. Update health card
+        elements.healthScore.textContent = `${score}%`;
+        elements.healthStatusText.textContent = translations[currentLang][status.key];
+        elements.healthCard.className = 'card health-card ' + status.class; // Reset and add new class
+        elements.healthCard.className = 'card health-card ' + status.class;
+        elements.healthDetails.textContent = healthDetailMessage;
+
+        // Show/hide improve score button
+        if (score < 100) {
+            elements.improveHealthBtn.style.display = 'inline-block';
+        } else {
+            elements.improveHealthBtn.style.display = 'none';
+        }
+
+        // Update individual sensor statuses
+        const t = translations[currentLang];
+        elements.tempValueP.className = `sensor-value ${detailedStatus.temp.class}`;
+        elements.tempStatus.textContent = t[detailedStatus.temp.textKey] || '';
+        elements.humidityValueP.className = `sensor-value ${detailedStatus.humidity.class}`;
+        elements.humidityStatus.textContent = t[detailedStatus.humidity.textKey] || '';
+        elements.moistureValueP.className = `sensor-value ${detailedStatus.moisture.class}`;
+        elements.moistureStatus.textContent = t[detailedStatus.moisture.textKey] || '';
+        elements.co2ValueP.className = `sensor-value ${detailedStatus.co2.class}`;
+        elements.co2Status.textContent = t[detailedStatus.co2.textKey] || '';
+
+        // 4. Update recommendations list
+        elements.recommendationsList.innerHTML = '';
+        if (recommendations.length > 0) {
+            recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.textContent = rec.message;
+                li.classList.add(rec.level);
+                elements.recommendationsList.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.textContent = 'No recommendations at this time. All systems optimal.'; // This should also be translated in a real app
+            li.textContent = 'No recommendations at this time. All systems optimal.';
+            elements.recommendationsList.appendChild(li);
+        }
+    }
+
+    /**
+     * A simple AI/rule-based engine to analyze sensor data against a crop's profile.
+     * @param {object} data - The current sensor data.
+     * @param {object} profile - The ideal profile for the selected crop.
+     * @returns {object} An object containing the health status and an array of recommendations.
+     */
+    function analyzeCropHealth(data, profile) {
+        const recommendations = [];
+        let urgentCount = 0;
+        let cautionCount = 0;
+        let healthDetailMessage = '';
+        const detailedStatus = {};
+
+        // Temperature Check
+        let tempStatus = { class: 'optimal', textKey: 'statusOptimal' };
+        if (data.temperature < profile.temp.caution[0] || data.temperature > profile.temp.caution[1]) {
+            urgentCount++;
+            tempStatus = { class: 'urgent', textKey: data.temperature < profile.temp.caution[0] ? 'statusLow' : 'statusHigh' };
+            recommendations.push({ level: 'urgent', message: `URGENT: Temperature is ${data.temperature}°C, which is outside the critical range.` });
+            if (!healthDetailMessage) { // Only set for the first issue found
+            if (!healthDetailMessage) {
+                healthDetailMessage = `Temperature is ${data.temperature}°C (Ideal: ${profile.temp.optimal[0]}-${profile.temp.optimal[1]}°C)`;
+            }
+        } else if (data.temperature < profile.temp.optimal[0] || data.temperature > profile.temp.optimal[1]) {
+            cautionCount++;
+            tempStatus = { class: 'caution', textKey: data.temperature < profile.temp.optimal[0] ? 'statusLow' : 'statusHigh' };
+            recommendations.push({ level: 'caution', message: `CAUTION: Temperature is ${data.temperature}°C. Aim for ${profile.temp.optimal[0]}-${profile.temp.optimal[1]}°C.` });
+            if (!healthDetailMessage) {
+                healthDetailMessage = `Temperature is ${data.temperature}°C (Ideal: ${profile.temp.optimal[0]}-${profile.temp.optimal[1]}°C)`;
+            }
+        }
+        detailedStatus.temp = tempStatus;
+
+        // Humidity Check (example)
+        let humidityStatus = { class: 'optimal', textKey: 'statusOptimal' };
+        if (data.humidity < profile.humidity.caution[0] || data.humidity > profile.humidity.caution[1]) {
+            urgentCount++;
+            humidityStatus = { class: 'urgent', textKey: data.humidity < profile.humidity.caution[0] ? 'statusLow' : 'statusHigh' };
+        } else if (data.humidity < profile.humidity.optimal[0] || data.humidity > profile.humidity.optimal[1]) {
+            cautionCount++;
+            humidityStatus = { class: 'caution', textKey: data.humidity < profile.humidity.optimal[0] ? 'statusLow' : 'statusHigh' };
+        }
+        detailedStatus.humidity = humidityStatus;
+
+        // Soil Moisture Check
+        let moistureStatus = { class: 'optimal', textKey: 'statusOptimal' };
+        if (data.soil_moisture < profile.moisture.caution[0] || data.soil_moisture > profile.moisture.caution[1]) {
+            urgentCount++;
+            moistureStatus = { class: 'urgent', textKey: data.soil_moisture < profile.moisture.caution[0] ? 'statusLow' : 'statusHigh' };
+            recommendations.push({ level: 'urgent', message: `URGENT: Soil moisture is ${data.soil_moisture}%. Check irrigation system.` });
+            if (!healthDetailMessage) {
+                healthDetailMessage = `Soil Moisture is ${data.soil_moisture}% (Ideal: ${profile.moisture.optimal[0]}-${profile.moisture.optimal[1]}%)`;
+            }
+        } else if (data.soil_moisture < profile.moisture.optimal[0]) {
+            cautionCount++;
+            moistureStatus = { class: 'caution', textKey: 'statusLow' };
+            recommendations.push({ level: 'caution', message: `CAUTION: Soil moisture is ${data.soil_moisture}%. Recommended to run irrigation.` });
+            if (!healthDetailMessage) {
+                healthDetailMessage = `Soil Moisture is ${data.soil_moisture}% (Ideal: ${profile.moisture.optimal[0]}-${profile.moisture.optimal[1]}%)`;
+            }
+        }
+        detailedStatus.moisture = moistureStatus;
+
+        // CO2 Check
+        let co2Status = { class: 'optimal', textKey: 'statusOptimal' };
+        if (data.co2 < profile.co2.caution[0] || data.co2 > profile.co2.caution[1]) {
+            urgentCount++;
+            co2Status = { class: 'urgent', textKey: data.co2 < profile.co2.caution[0] ? 'statusLow' : 'statusHigh' };
+            recommendations.push({ level: 'urgent', message: `URGENT: CO₂ level is ${data.co2} ppm. Check ventilation or CO₂ injector.` });
+            if (!healthDetailMessage) {
+                healthDetailMessage = `CO₂ is ${data.co2} ppm (Ideal: ${profile.co2.optimal[0]}-${profile.co2.optimal[1]} ppm)`;
+            }
+        } else if (data.co2 < profile.co2.optimal[0] || data.co2 > profile.co2.optimal[1]) {
+            cautionCount++;
+            co2Status = { class: 'caution', textKey: data.co2 < profile.co2.optimal[0] ? 'statusLow' : 'statusHigh' };
+            recommendations.push({ level: 'caution', message: `CAUTION: CO₂ level is ${data.co2} ppm. Consider adjusting.` });
+            if (!healthDetailMessage) {
+                healthDetailMessage = `CO₂ is ${data.co2} ppm (Ideal: ${profile.co2.optimal[0]}-${profile.co2.optimal[1]} ppm)`;
+            }
+        }
+        detailedStatus.co2 = co2Status;
+
+        // Calculate score
+        let score = 100 - (urgentCount * 25) - (cautionCount * 10);
+        if (score < 0) score = 0;
+
+        // Determine overall status
+        let status;
+        if (urgentCount > 0) {
+            status = { key: 'urgent', class: 'status-urgent' };
+        } else if (cautionCount > 0) {
+            status = { key: 'caution', class: 'status-caution' };
+        } else {
+            status = { key: 'optimal', class: 'status-optimal' };
+            healthDetailMessage = 'All parameters are within the optimal range.';
+            score = 100; // Ensure it's exactly 100 if optimal
+            score = 100;
+        }
+
+        return { status, recommendations, healthDetailMessage, detailedStatus, score: Math.round(score) };
+    }
+
+    function resetSensorReadings() {
+        // Hide sensor values and show disconnected message in health card
+        elements.healthScore.style.display = 'none';
+        elements.healthStatusText.style.display = 'none';
+        elements.improveHealthBtn.style.display = 'none';
+        elements.healthDetails.textContent = translations[currentLang].deviceNotConnected;
+        elements.healthDetails.style.display = 'block';
+        elements.healthCard.className = 'card health-card disconnected';
+
+        // Hide the main sensor grid
+        elements.sensorGrid.style.display = 'none';
+
+        // Clear individual sensor text
+        elements.temp.textContent = '--';
+        elements.humidity.textContent = '--';
+        elements.moisture.textContent = '--';
+        elements.ph.textContent = '--';
+        elements.light.textContent = '--';
+        elements.npk.textContent = '--';
+        elements.co2.textContent = '--';
+        elements.ec.textContent = '--';
+        elements.liveReadingCropName.textContent = '';
+
+        // Reset individual sensor status text
+        document.querySelectorAll('.sensor-status').forEach(el => el.textContent = '');
+        document.querySelectorAll('.sensor-value').forEach(el => el.className = 'sensor-value');
+
+        elements.recommendationsList.innerHTML = `<li>${translations[currentLang].disconnected}.</li>`;
+    }
+
+    // --- EVENT LISTENERS ---
+    // Update dashboard when a new crop is selected
+    elements.cropSelector.addEventListener('change', () => {
+        populateGrowthStages(elements.cropSelector.value);
+        updateIdealConditionsUI();
+        // When crop changes, we should immediately update live data if connected
+        if (isConnected) {
+            updateDashboardUI();
+        }
+    });
+
+    elements.growthStageSelector.addEventListener('change', () => {
+        updateIdealConditionsUI();
+        // When stage changes, we should immediately update live data if connected
+        if (isConnected) {
+            updateDashboardUI();
+        }
+    });
+
+    elements.irrigationToggle.addEventListener('change', (e) => {
+        const wasActive = controlState.irrigation.active;
+        controlState.irrigation.active = e.target.checked;
+        if (e.target.checked) { // just turned on
+        if (e.target.checked) {
+            controlState.irrigation.startTime = Date.now();
+        } else if (wasActive) { // just turned off
+        } else if (wasActive) {
+            controlState.irrigation.totalActiveTime += (Date.now() - controlState.irrigation.startTime);
+            controlState.irrigation.startTime = null;
+        }
+        updateControlsUI();
+    });
+    elements.lightsToggle.addEventListener('change', (e) => {
+        const wasActive = controlState.lights.active;
+        controlState.lights.active = e.target.checked;
+        if (e.target.checked) {
+            controlState.lights.startTime = Date.now();
+        } else if (wasActive) {
+            controlState.lights.totalActiveTime += (Date.now() - controlState.lights.startTime);
+            controlState.lights.startTime = null;
+        }
+        updateControlsUI();
+    });
+    elements.fanToggle.addEventListener('change', (e) => {
+        const wasActive = controlState.fan.active;
+        controlState.fan.active = e.target.checked;
+        if (e.target.checked) {
+            controlState.fan.startTime = Date.now();
+        } else if (wasActive) {
+            controlState.fan.totalActiveTime += (Date.now() - controlState.fan.startTime);
+            controlState.fan.startTime = null;
+        }
+        updateControlsUI();
+    });
+    elements.co2InjectorToggle.addEventListener('change', (e) => {
+        const wasActive = controlState.co2Injector.active;
+        controlState.co2Injector.active = e.target.checked;
+        if (e.target.checked) {
+            controlState.co2Injector.startTime = Date.now();
+        } else if (wasActive) {
+            controlState.co2Injector.totalActiveTime += (Date.now() - controlState.co2Injector.startTime);
+            controlState.co2Injector.startTime = null;
+        }
+        updateControlsUI();
+    });
+
+    // Reset Button Listeners
+    const setupResetListener = (btn, control) => {
+        btn.addEventListener('click', () => {
+            control.totalActiveTime = 0;
+            if (control.active) control.startTime = Date.now();
+            updateControlsUI();
+        });
+    };
+    setupResetListener(elements.irrigationResetBtn, controlState.irrigation);
+    setupResetListener(elements.lightsResetBtn, controlState.lights);
+    setupResetListener(elements.fanResetBtn, controlState.fan);
+    setupResetListener(elements.co2InjectorResetBtn, controlState.co2Injector);
+
+    // Handle Improve Health button click
+    elements.improveHealthBtn.addEventListener('click', () => {
+        elements.recommendationsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Handle language change
+    elements.langSelector.addEventListener('change', (e) => {
+        setLanguage(e.target.value);
+    });
+
+    // Handle connect/disconnect button
+    elements.connectBtn.addEventListener('click', () => {
+        isConnected = !isConnected;
+        const t = translations[currentLang];
+
+        if (isConnected) {
+            elements.connectBtn.textContent = t.disconnect;
+            elements.connectionText.textContent = t.connected;
+            elements.connectionText.className = 'connected';
+            // Show relevant elements
+            elements.healthScore.style.display = 'block';
+            elements.healthStatusText.style.display = 'block';
+            elements.healthDetails.style.display = 'block';
+            elements.sensorGrid.style.display = 'grid';
+            updateDashboardUI(); // Initial update
+            updateInterval = setInterval(updateDashboardUI, 5000); // Auto-update every 5 seconds
+            updateDashboardUI();
+            updateInterval = setInterval(updateDashboardUI, 5000);
+        } else {
+            elements.connectBtn.textContent = t.connect;
+            elements.connectionText.textContent = t.disconnected;
+            elements.connectionText.className = 'disconnected';
+            clearInterval(updateInterval);
+            resetSensorReadings();
+        }
+    });
+
+    // --- INITIALIZATION ---
+    // Set default language and clear sensor readings on page load
+    populateGrowthStages(elements.cropSelector.value);
+    setLanguage(currentLang);
+    updateControlsUI();
+    updateIdealConditionsUI(); // Populate ideal conditions on load
+    resetSensorReadings(); // Clear live sensor data
+    controlUpdateInterval = setInterval(updateControlsUI, 1000); // Start timer updates
+    updateIdealConditionsUI();
+    resetSensorReadings();
+    controlUpdateInterval = setInterval(updateControlsUI, 1000);
+
+});
+    </script>
+</body>
+</html>
